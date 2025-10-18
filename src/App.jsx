@@ -1,3 +1,13 @@
+// Simulated flight statuses
+const FLIGHT_STATUSES = ['On Time', 'Delayed', 'Boarding', 'Departed', 'Arrived', 'Gate Change'];
+const STATUS_COLORS = {
+  'On Time': '#b3e6b3',
+  'Delayed': '#ffe066',
+  'Boarding': '#4f8cff',
+  'Departed': '#b3c6e6',
+  'Arrived': '#e5e5ff',
+  'Gate Change': '#ff3333'
+};
 // Helper: get block color by airline code
 function getBlockColor(flightNum) {
   if (!flightNum || typeof flightNum !== 'string') return '#e3eafc';
@@ -14,11 +24,62 @@ function getBlockColor(flightNum) {
   }
 }
 import React, { useState, useEffect, useRef } from 'react';
+import EventLog from './EventLog';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 import DailyReports from './DailyReports';
 import Staff from './Staff';
 import { supabase } from './supabaseClient';
+
+// Header Component
+function AppHeader() {
+  return (
+    <header style={{
+      width: '100%',
+      background: 'linear-gradient(90deg, #007bff 0%, #4f8cff 100%)',
+      color: '#fff',
+      padding: '1.2em 0',
+      boxShadow: '0 2px 8px rgba(0,123,255,0.08)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1em', marginLeft: '2em' }}>
+        <img src="/vite.svg" alt="AROC Logo" style={{ width: 40, height: 40, borderRadius: 8, background: '#fff', boxShadow: '0 2px 8px rgba(0,123,255,0.10)' }} />
+        <span style={{ fontWeight: 700, fontSize: '1.5em', letterSpacing: '2px' }}>AROC</span>
+      </div>
+      <nav style={{ marginRight: '2em', display: 'flex', gap: '2em', fontWeight: 500 }}>
+        <a href="/main" style={{ color: '#fff', textDecoration: 'none', fontSize: '1.1em' }}>Dashboard</a>
+        <a href="/daily-reports" style={{ color: '#fff', textDecoration: 'none', fontSize: '1.1em' }}>Daily Reports</a>
+        <a href="/staff" style={{ color: '#fff', textDecoration: 'none', fontSize: '1.1em' }}>Staff</a>
+       
+        <a href="/" style={{ color: '#fff', textDecoration: 'none', fontSize: '1.1em' }}>Logout</a>
+      </nav>
+    </header>
+  );
+}
+
+// Footer Component
+function AppFooter() {
+  return (
+    <footer style={{
+      width: '100%',
+      background: '#e3eafc',
+      color: '#007bff',
+      padding: '1em 0',
+      textAlign: 'center',
+      fontWeight: 500,
+      fontSize: '1em',
+      boxShadow: '0 -2px 8px rgba(0,123,255,0.04)',
+      marginTop: '2em'
+    }}>
+      &copy; {new Date().getFullYear()} AROC Airline Staffing Dashboard
+    </footer>
+  );
+}
 
 
 // ContextMenu Component
@@ -191,8 +252,23 @@ function LoginPage({ onLogin }) {
   };
   // Use React Router's useNavigate for navigation
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#003366' }}>
-      <form onSubmit={handleSubmit} style={{ background: '#fff', padding: '2em', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '320px', textAlign: 'center' }}>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {/* Blurred background image */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        backgroundImage: 'url(/src/assets/bg.jpeg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'blur(8px) brightness(0.7)',
+        transition: 'filter 0.5s',
+      }} />
+      {/* Login form above background */}
+      <form onSubmit={handleSubmit} style={{ background: 'rgba(255,255,255,0.92)', padding: '2em', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', minWidth: '320px', textAlign: 'center', zIndex: 1, position: 'relative', backdropFilter: 'blur(2px)' }}>
         <img src="/vite.svg" alt="AROC Logo" style={{ width: '90px', height: '90px', objectFit: 'contain', marginBottom: '0.5em', boxShadow: '0 2px 12px rgba(0,51,102,0.10)', borderRadius: '12px', background: '#f8f8fa' }} />
         <h2 style={{ color: '#003366', marginBottom: '0.5em', fontWeight: 700, fontSize: '2em', letterSpacing: '2px' }}>AROC</h2>
         <div style={{ color: '#003366', fontWeight: 600, marginBottom: '1em', fontSize: '1.1em' }}>Airline RAMP & CS Staffing Dashboard</div>
@@ -205,13 +281,7 @@ function LoginPage({ onLogin }) {
         <div style={{ marginTop: '1em' }}>
           <button type="button" onClick={() => setIsSignup(s => !s)} style={{ background: '#009966', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5em 1em', fontWeight: 600, cursor: 'pointer' }}>{isSignup ? 'Switch to Login' : 'Switch to Sign Up'}</button>
         </div>
-        <button
-          type="button"
-          style={{ marginTop: '2em', width: '100%', padding: '0.7em', background: '#009966', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '1.1em', cursor: 'pointer' }}
-          onClick={() => window.location.href = '/idle-game'}
-        >
-          Idle Game Mode
-        </button>
+        
         {error && <div style={{ color: isSignup ? '#009966' : 'red', marginTop: '1em', fontWeight: 500 }}>{error}</div>}
       </form>
     </div>
@@ -252,6 +322,16 @@ function StatsPage() {
 
   // Helper: get block color by airline code
 // Helper: get block color by airline code
+// Simulated flight statuses
+const FLIGHT_STATUSES = ['On Time', 'Delayed', 'Boarding', 'Departed', 'Arrived', 'Gate Change'];
+const STATUS_COLORS = {
+  'On Time': '#b3e6b3',
+  'Delayed': '#ffe066',
+  'Boarding': '#4f8cff',
+  'Departed': '#b3c6e6',
+  'Arrived': '#e5e5ff',
+  'Gate Change': '#ff3333'
+};
 function getBlockColor(flightNum) {
   if (!flightNum) return '#e3eafc';
   const airline = flightNum.slice(0, 2);
@@ -305,7 +385,9 @@ function getBlockColor(flightNum) {
     }
   }, [currentMinutes, pixelsPerMinute]);
   return (
-    <div ref={timelineRef} className="timeline-bar horizontal-timeline realistic-timeline" style={{ height: '100%', overflowY: 'auto', overflowX: 'auto', maxHeight: 'calc(100vh - 120px)', position: 'relative', transition: 'box-shadow 0.5s', minWidth: timelineMinutes * pixelsPerMinute + 400, marginTop: '0.5em', zIndex: 1 }}>
+    <>
+      <AppHeader />
+      <div ref={timelineRef} className="timeline-bar horizontal-timeline realistic-timeline" style={{ height: '100%', overflowY: 'auto', overflowX: 'auto', maxHeight: 'calc(100vh - 120px)', position: 'relative', transition: 'box-shadow 0.5s', minWidth: timelineMinutes * pixelsPerMinute + 400, marginTop: '0.5em', zIndex: 1 }}>
       {/* Sticky timeline header */}
       <div style={{ position: 'sticky', top: 0, left: 0, zIndex: 100, background: 'rgba(255,255,255,0.98)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'row', alignItems: 'center', width: '100%' }}>
         <div className="timeline-gate-label timeline-header-label" style={{ minWidth: 80, fontWeight: 600 }}>Gate</div>
@@ -454,7 +536,9 @@ function getBlockColor(flightNum) {
           );
         })}
       </div>
-    </div>
+      </div>
+      <AppFooter />
+    </>
   );
 }
 
@@ -515,6 +599,15 @@ function EmployeeModal({ emp, assignment, closeModal, reassignEmployee, clockOut
 
 // Main App component
 function App() {
+  // ...existing code...
+  // Close context menu on outside click
+  useEffect(() => {
+    function handleClick() {
+      setFlightContextMenu(fc => fc.visible ? { ...fc, visible: false } : fc);
+    }
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
   // Employees state
   const [employees, setEmployees] = useState(() => {
     const stored = localStorage.getItem('employees');
@@ -525,25 +618,42 @@ function App() {
   }, [employees]);
 
   // Flights state
-  const [flights, setFlights] = useState(generateFlights());
-  // Dynamic assignment adder every 30 minutes
+  const [flights, setFlights] = useState(() => {
+    // Add status and passenger load to each flight
+    return generateFlights().map(f => ({
+      ...f,
+      status: FLIGHT_STATUSES[Math.floor(Math.random() * FLIGHT_STATUSES.length)],
+      pax: Math.floor(60 + Math.random() * 120)
+    }));
+  });
+  // Simulate flight status changes and new flights
   useEffect(() => {
     const interval = setInterval(() => {
-      setFlights(prev => {
-        const now = new Date();
-        const minute = now.getMinutes();
-        // Only add if on the half hour
-        if (minute % 30 === 0) {
-          // Add a new flight to each gate
-          const newFlights = [...prev];
-          DEN_GATES.slice(0, 20).forEach(gate => {
-            newFlights.push(generateRandomFlight(gate));
-          });
-          return newFlights;
+      setFlights(prev => prev.map(f => {
+        // Randomly update status
+        let newStatus = f.status;
+        if (Math.random() < 0.15) {
+          newStatus = FLIGHT_STATUSES[Math.floor(Math.random() * FLIGHT_STATUSES.length)];
         }
-        return prev;
-      });
-    }, 60000); // check every minute
+        // Randomly update passenger load
+        let newPax = f.pax;
+        if (Math.random() < 0.1) {
+          newPax = Math.max(60, Math.min(180, newPax + Math.floor(Math.random() * 20 - 10)));
+        }
+        return { ...f, status: newStatus, pax: newPax };
+      }));
+      // Occasionally add new flights
+      if (Math.random() < 0.05) {
+        setFlights(prev => [
+          ...prev,
+          ...DEN_GATES.slice(0, 2).map(gate => ({
+            ...generateRandomFlight(gate),
+            status: FLIGHT_STATUSES[Math.floor(Math.random() * FLIGHT_STATUSES.length)],
+            pax: Math.floor(60 + Math.random() * 120)
+          }))
+        ]);
+      }
+    }, 10000); // every 10s
     return () => clearInterval(interval);
   }, []);
   // Live time state
@@ -561,7 +671,7 @@ function App() {
   // Context menu state
   const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, emp: null, gate: null });
   // Login state
-  const [loggedIn, setLoggedIn] = useState(false);
+  // Remove internal login state
   // Modal states
   const [manualAssignOpen, setManualAssignOpen] = useState(false);
   const [selectedGate, setSelectedGate] = useState('');
@@ -668,31 +778,22 @@ function App() {
     }
   }, [employees, flights, manuallyRemoved]);
 
-  if (!loggedIn) {
-    return <LoginPage onLogin={setLoggedIn} />;
-  }
+
 
   return (
     <div style={{ width: '100vw', minHeight: '100vh', margin: 0, padding: 0, background: 'linear-gradient(120deg,#eaf3fa 0%,#f8f8fa 100%)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      {/* Top Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', background: '#003366', color: '#fff', padding: '0.5em 1.5em', fontWeight: 700, fontSize: '1.2em', letterSpacing: '2px' }}>
-        <img src="/vite.svg" alt="United Logo" style={{ width: 40, height: 40, marginRight: 16 }} />
-        <span style={{ fontSize: '1.3em', marginRight: 24 }}>DEN | AROC</span>
-        <span style={{ marginLeft: 'auto', fontWeight: 400, fontSize: '1em' }}>{new Date().toLocaleDateString()}</span>
-        <button style={{ marginLeft: 32, background: '#fff', color: '#003366', border: 'none', borderRadius: 8, padding: '0.4em 1em', fontWeight: 600, cursor: 'pointer' }} onClick={handleLogout}>Logout</button>
-      </div>
 
-      {/* Main Layout: Sidebar + Timeline */}
-      <div style={{ display: 'flex', flex: 1, minHeight: 0, width: '100vw', height: 'calc(100vh - 60px)', margin: 0, padding: 0 }}>
+      // Main Layout: Sidebar + Timeline + Event Log
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, width: '100vw', height: 'calc(100vh - 60px)', margin: 0, padding: 0, gap: '2.5em', background: '#f4f8fc' }}>
         {/* Sidebar: Gates & Resources */}
-        <aside style={{ width: 260, background: '#eaf3fa', borderRight: '2px solid #d1eaff', padding: '1em 0.5em', overflowY: 'auto', height: '100%' }}>
-          <div style={{ fontWeight: 700, fontSize: '1.1em', marginBottom: '1em', color: '#003366' }}>Resources</div>
+      <aside style={{ width: 280, background: '#eaf3fa', borderRight: '2px solid #d1eaff', padding: '2em 1.5em', overflowY: 'auto', height: '100%', borderRadius: '18px', boxShadow: '0 2px 12px rgba(0,51,102,0.07)' }}>
+      <div style={{ fontWeight: 700, fontSize: '1.2em', marginBottom: '1.5em', color: '#003366', letterSpacing: '1px' }}>Resources</div>
           {/* Dynamic gate/resource list */}
           {DEN_GATES.slice(0, 30).map(gate => {
             // Employees assigned to this gate
             const assignedEmps = (assignments[gate] || []);
             return (
-              <div key={gate} style={{ marginBottom: '1em', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,51,102,0.08)', padding: '0.7em 1em' }}>
+              <div key={gate} style={{ marginBottom: '1.5em', background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,51,102,0.10)', padding: '1.2em 1.2em' }}>
                 <div style={{ fontWeight: 600, color: '#003366', marginBottom: 4 }}>{gate}</div>
                 {assignedEmps.length === 0 ? (
                   <div style={{ fontSize: '0.98em', color: '#888', marginBottom: 2 }}>No employees assigned</div>
@@ -705,12 +806,17 @@ function App() {
             );
           })}
         </aside>
+        {/* Event Log Sidebar */}
+      <aside style={{ width: 280, background: '#fff', borderLeft: '2px solid #d1eaff', padding: '2em 1.5em', overflowY: 'auto', height: '100%', borderRadius: '18px', boxShadow: '0 2px 12px rgba(0,51,102,0.07)' }}>
+      <div style={{ fontWeight: 700, fontSize: '1.2em', marginBottom: '1.5em', color: '#003366', letterSpacing: '1px' }}>Event Log</div>
+          <EventLog flights={flights} />
+        </aside>
 
         {/* Timeline Area */}
-        <section style={{ flex: 1, width: '100%', height: '100%', padding: 0, margin: 0, overflow: 'auto', background: '#f4f8fc', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 700, fontSize: '1.2em', margin: '0.5em 0 0.5em 1em', color: '#003366', letterSpacing: '1px' }}>Timeline</div>
+  <section style={{ flex: 1, width: '100%', height: '100%', padding: '2em 2em', margin: 0, overflow: 'auto', background: '#f4f8fc', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', borderRadius: '18px', boxShadow: '0 2px 12px rgba(0,51,102,0.07)' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.3em', margin: '0.5em 0 1.5em 0.5em', color: '#003366', letterSpacing: '1.5px' }}>Timeline</div>
           {/* Time ticks header with dynamic current time and cursor */}
-          <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '0.5em', background: '#eaf3fa', borderBottom: '2px solid #d1eaff', padding: '0.5em 0 0.5em 60px', minHeight: 40 }}>
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: '1.5em', background: '#eaf3fa', borderBottom: '2px solid #d1eaff', padding: '1em 0 1em 80px', minHeight: 48, borderRadius: '12px' }}>
             {/* Dynamic time ticks: 06:00 to 24:00, spaced out */}
             {(() => {
               const ticks = [];
@@ -738,7 +844,7 @@ function App() {
             })()}
           </div>
           {/* Timeline rows for gates */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5em', width: '100%', overflowY: 'auto', background: '#f4f8fc' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1.2em', width: '100%', overflowY: 'auto', background: '#f4f8fc', position: 'relative', overflowX: 'auto' }}>
             {DEN_GATES.slice(0, 20).map(gate => {
               // Employees assigned to this gate
               const assignedEmps = (assignments[gate] || []);
@@ -760,11 +866,11 @@ function App() {
               }
               // Timeline row: gate label, vertical employee list, horizontal assignment bars
               return (
-                <div key={gate} style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', marginBottom: '0.5em', background: '#f8f8fa', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,51,102,0.08)', minHeight: Math.max(60, uniqueEmps.length * 32 + 20) }}>
+                <div key={gate} style={{ display: 'flex', flexDirection: 'row', alignItems: 'stretch', marginBottom: '1.5em', background: '#f8f8fa', borderRadius: 14, boxShadow: '0 2px 12px rgba(0,51,102,0.10)', minHeight: Math.max(70, uniqueEmps.length * 36 + 24), padding: '1.2em 1.2em', position: 'relative', overflow: 'auto', minWidth: 1200 }}>
                   {/* Gate label */}
-                  <div style={{ minWidth: 120, background: '#2a8dd4', color: '#fff', fontWeight: 700, fontSize: '1.25em', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 8, borderBottomLeftRadius: 8, borderRight: '3px solid #fff', letterSpacing: '1px' }}>{gate}</div>
+                  <div style={{ minWidth: 120, background: '#2a8dd4', color: '#fff', fontWeight: 700, fontSize: '1.25em', display: 'flex', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 14, borderBottomLeftRadius: 14, borderRight: '3px solid #fff', letterSpacing: '1px', padding: '0.7em 0' }}>{gate}</div>
                   {/* Employee list */}
-                  <div style={{ minWidth: 220, background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRight: '2px solid #eaf3fa', padding: '0.7em 1em', position: 'relative' }}>
+                  <div style={{ minWidth: 220, background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRight: '2px solid #eaf3fa', padding: '1em 1.2em', position: 'relative', borderRadius: '8px' }}>
                     {uniqueEmps.length === 0 ? (
                       <div style={{ color: '#888', fontSize: '1.08em', fontWeight: 500 }}>No employees assigned</div>
                     ) : (
@@ -793,7 +899,20 @@ function App() {
                     ))}
                   </div>
                   {/* Timeline assignments */}
-                  <div style={{ flex: 1, position: 'relative', minHeight: Math.max(60, uniqueEmps.length * 32 + 40), background: '#f4f8fc', overflow: 'visible' }}>
+                  <div style={{ flex: 1, position: 'relative', minHeight: Math.max(70, uniqueEmps.length * 36 + 44), background: '#f4f8fc', overflow: 'visible', borderRadius: '8px', marginLeft: '1em', minWidth: 1000 }}>
+                    {/* Vertical organization lines for timeline */}
+                    {Array.from({length: 10}).map((_, i) => (
+                      <div key={i} style={{
+                        position: 'absolute',
+                        left: `${(i+1)*120}px`,
+                        top: 0,
+                        bottom: 0,
+                        width: '2px',
+                        background: '#e3eafc',
+                        zIndex: 1,
+                        opacity: 0.7
+                      }} />
+                    ))}
                     {/* Aircraft bars (one per flight, above assignments) */}
                     {gateFlights.map((flight, fIdx) => {
                       // Aircraft type (random for demo)
@@ -801,17 +920,21 @@ function App() {
                       // Bar color for aircraft
                       const aircraftColor = '#d2b48c'; // brown/tan
                       // Dynamic position and width
-                      const left = timeToMinutes(flight.time) * 2 + 40;
-                      let duration = 45;
+                      // Ensure blocks stay inside container
+                      let leftAircraft = timeToMinutes(flight.time) * 2 + 40;
+                      leftAircraft = Math.max(leftAircraft, 0);
+                      let durationAircraft = 45;
                       if (fIdx < gateFlights.length - 1) {
-                        duration = timeToMinutes(gateFlights[fIdx + 1].time) - timeToMinutes(flight.time);
-                        if (duration < 20) duration = 20;
+                        durationAircraft = timeToMinutes(gateFlights[fIdx + 1].time) - timeToMinutes(flight.time);
+                        if (durationAircraft < 20) durationAircraft = 20;
                       }
-                      const width = duration * 2.5;
-                      const top = 0;
+                      let widthAircraft = durationAircraft * 2.5;
+                      // Prevent overflow
+                      widthAircraft = Math.min(widthAircraft, 600 - leftAircraft - 24);
+                      const topAircraft = 0;
                       return (
                         <div key={flight.flightNum + '-aircraft'}
-                          style={{ position: 'absolute', left, top, width, height: 18, background: aircraftColor, borderRadius: 4, border: '2px solid #a66', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', zIndex: 3, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: '0.95em', color: '#fff', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}
+                          style={{ position: 'absolute', left: leftAircraft, top: topAircraft, width: widthAircraft, height: 18, background: aircraftColor, borderRadius: 4, border: '2px solid #a66', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', zIndex: 3, display: 'flex', alignItems: 'center', fontWeight: 700, fontSize: '0.95em', color: '#fff', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}
                           title={`Aircraft: ${aircraft}`}
                         >
                           {aircraft}
@@ -823,13 +946,16 @@ function App() {
                       // Employees assigned to this flight
                       const assigned = assignedEmps.filter(e => e.current.flightNum === flight.flightNum);
                       // Dynamic position and width
-                      const left = timeToMinutes(flight.time) * 2 + 40;
-                      let duration = 45;
+                      let leftAssign = timeToMinutes(flight.time) * 2 + 40;
+                      leftAssign = Math.max(leftAssign, 0);
+                      let durationAssign = 45;
                       if (fIdx < gateFlights.length - 1) {
-                        duration = timeToMinutes(gateFlights[fIdx + 1].time) - timeToMinutes(flight.time);
-                        if (duration < 20) duration = 20;
+                        durationAssign = timeToMinutes(gateFlights[fIdx + 1].time) - timeToMinutes(flight.time);
+                        if (durationAssign < 20) durationAssign = 20;
                       }
-                      const width = duration * 2.5;
+                      let widthAssign = durationAssign * 2.5;
+                      // Prevent overflow
+                      widthAssign = Math.min(widthAssign, 600 - leftAssign - 24);
                       // For each assigned employee, render a bar on their row
                       return assigned.map((emp, idx) => {
                         // Determine if flight is departure or arrival (simple logic: even idx = departure, odd = arrival)
@@ -839,25 +965,45 @@ function App() {
                         const arrTypes = ['AR', 'LD-AR'];
                         const type = isDeparture ? depTypes[idx % 2] : arrTypes[idx % 2];
                         // Bar color by type
-                        let barColor = isDeparture ? '#b3e6b3' : '#b3c6e6';
+                        let barColor = STATUS_COLORS[flight.status] || (isDeparture ? '#b3e6b3' : '#b3c6e6');
                         // Bar position
-                        const top = 22 + uniqueEmps.findIndex(e => e.id === emp.id) * 32;
+                        const topAssign = 22 + uniqueEmps.findIndex(e => e.id === emp.id) * 32;
                         return (
                           <div key={emp.id + '-' + flight.flightNum}
-                            style={{ position: 'absolute', left, top, width, height: 28, background: barColor, borderRadius: 6, border: '2px solid #003366', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', zIndex: 2, display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '0.98em', cursor: 'pointer', overflow: 'hidden', fontFamily: 'Arial, sans-serif' }}
-                            title={`${gate} ${flight.flightNum} ${type} ${duration}min`}
+                            style={{ position: 'absolute', left: leftAssign, top: topAssign, width: widthAssign, height: 28, background: barColor, borderRadius: 6, border: '2px solid #003366', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', zIndex: 2, display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '0.98em', cursor: 'pointer', overflow: 'hidden', fontFamily: 'Arial, sans-serif' }}
+                            title={`${gate} ${flight.flightNum} ${type} ${durationAssign}min | Status: ${flight.status} | Pax: ${flight.pax}`}
                             onContextMenu={e => {
                               e.preventDefault();
-                              setContextMenu({ visible: true, x: e.clientX, y: e.clientY, emp, gate });
+                              e.stopPropagation();
+                              setFlightContextMenu({
+                                visible: true,
+                                x: e.clientX,
+                                y: e.clientY,
+                                emp,
+                                gate,
+                                flightNum: flight.flightNum
+                              });
                             }}
                           >
                             <span style={{ marginRight: 6, color: '#2a8dd4', fontWeight: 700 }}>{gate}</span>
                             <span style={{ marginRight: 6, color: '#222', fontWeight: 700 }}>{flight.flightNum}</span>
                             <span style={{ marginRight: 6, color: '#009966', fontWeight: 700 }}>{type}</span>
-                            <span style={{ marginRight: 6, color: '#555', fontWeight: 700 }}>:{duration}</span>
+                            <span style={{ marginRight: 6, color: '#555', fontWeight: 700 }}>:{durationAssign}</span>
+                            <span style={{ marginLeft: 8, color: STATUS_COLORS[flight.status] || '#222', fontWeight: 700, fontSize: '0.95em', background: '#fff', borderRadius: 4, padding: '2px 8px', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>{flight.status}</span>
+                            <span style={{ marginLeft: 8, color: '#003366', fontWeight: 600, fontSize: '0.95em', background: '#eaf3fa', borderRadius: 4, padding: '2px 8px' }}>Pax: {flight.pax}</span>
                           </div>
                         );
                       });
+    {/* Render context menu at top level for visibility */}
+    {flightContextMenu.visible && (
+      <div style={{ position: 'fixed', left: flightContextMenu.x, top: flightContextMenu.y, zIndex: 100000, background: '#fff', border: '2px solid #003366', borderRadius: '10px', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', minWidth: '220px', padding: '1em 1em', pointerEvents: 'auto', color: '#222', userSelect: 'none' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ fontWeight: 'bold', marginBottom: '0.5em', color: '#003366', fontSize: '1.08em' }}>Flight {flightContextMenu.flightNum} @ {flightContextMenu.gate}</div>
+        <button style={{ display: 'block', width: '100%', padding: '0.4em 0.2em', margin: '0.2em 0', background: '#f4f6fa', border: 'none', borderRadius: '4px', color: '#003366', fontWeight: 500, fontSize: '1em', cursor: 'pointer', textAlign: 'left' }} onClick={() => { setManualAssignOpen(true); setSelectedGate(flightContextMenu.gate); setSelectedFlight(flightContextMenu.flightNum); setFlightContextMenu({ ...flightContextMenu, visible: false }); }}>Assign/Move Employees</button>
+        <button style={{ display: 'block', width: '100%', padding: '0.4em 0.2em', margin: '0.2em 0', background: '#f4f6fa', border: 'none', borderRadius: '4px', color: '#003366', fontWeight: 500, fontSize: '1em', cursor: 'pointer', textAlign: 'left' }} onClick={() => { /* Simulate gate change */ setAssignments(prev => { const newAssign = { ...prev }; if (newAssign[flightContextMenu.gate]) { newAssign[flightContextMenu.gate] = newAssign[flightContextMenu.gate].map(emp => emp.current.flightNum === flightContextMenu.flightNum ? { ...emp, current: { ...emp.current, gate: 'G99' } } : emp); } return newAssign; }); setFlightContextMenu({ ...flightContextMenu, visible: false }); }}>Gate Change</button>
+        <button style={{ display: 'block', width: '100%', padding: '0.4em 0.2em', margin: '0.2em 0', background: '#f4f6fa', border: 'none', borderRadius: '4px', color: '#003366', fontWeight: 500, fontSize: '1em', cursor: 'pointer', textAlign: 'left' }} onClick={() => { setFlightContextMenu({ ...flightContextMenu, visible: false }); }}>Close</button>
+      </div>
+    )}
                     })}
                   </div>
                 </div>
