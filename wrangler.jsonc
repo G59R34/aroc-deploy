@@ -1,0 +1,5 @@
+{
+  "name": "aroc",
+  "compatibility_date": "2025-10-18",
+    "main": "src/app.jsx"
+}
