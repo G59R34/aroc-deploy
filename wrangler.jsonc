@@ -1,5 +1,5 @@
 {
-  "name": "aroc-deploy",
+  "name": "aroc",
   "compatibility_date": "2025-10-18",
   "assets": {
     "directory": "./dist"
